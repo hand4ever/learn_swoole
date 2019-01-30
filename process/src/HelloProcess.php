@@ -13,11 +13,12 @@ use \Swoole\Process as SwooleProcess;
 
 class HelloProcess {
     //测试标记
-    const TASK_CASE_CWD  = 1;//当前工作目录
-    const TASK_CASE_GID  = 2;//当前 PHP 脚本拥有者的用户组 ID
-    const TASK_CASE_UID  = 3;//当前 PHP 脚本所有者的 UID
-    const TASK_CASE_NICE = 4; // 进程 nice 值
-    const TASK_CASE_FP   = 5;//文件描述符（文件句柄、fp）
+    const TASK_CASE_CWD   = 1;//当前工作目录
+    const TASK_CASE_GID   = 2;//当前 PHP 脚本拥有者的用户组 ID
+    const TASK_CASE_UID   = 3;//当前 PHP 脚本所有者的 UID
+    const TASK_CASE_NICE  = 4; // 进程 nice 值
+    const TASK_CASE_FP    = 5;//文件描述符（文件句柄、fp）
+    const TASK_CASE_MYSQL = 6;//mysql句柄
 
     /**
      * 测试文件名
@@ -70,15 +71,19 @@ class HelloProcess {
                 break;
             case self::TASK_CASE_FP:
                 if(!$this->isSubProcess) {//父进程更改当前工作目录，看看子进程会不会更改
-                    $this->fp = fopen(self::FILENAME, 'r+');
+                    $this->fp = fopen(self::FILENAME, 'r');
                 }
                 $this->info($this->currentPid, "{$prefix} 文件描述符：" . print_r($this->fp, true));
                 if ($this->isSubProcess) {//子进程写文件
-                    $str = "[" . date('Y-m-d H:i:s') . "-pid=" . $this->currentPid . "-子进程写入]" . PHP_EOL;
-                    fwrite($this->fp, $str, strlen($str));
-                    $this->info($this->currentPid, "{$prefix} 写入完成！");
-//                    i
+//                    $str = "[" . date('Y-m-d H:i:s') . "-pid=" . $this->currentPid . "-子进程写入]" . PHP_EOL;
+//                    fwrite($this->fp, $str, strlen($str));
+                    fseek($this->fp, 3);
+//                    $this->info($this->currentPid, "{$prefix} 写入完成！");
+//                    fclose($this->fp);
                 }
+                break;
+            case self::TASK_CASE_MYSQL:
+
                 break;
             default:
                 $this->info($this->currentPid, "{$prefix} test！");
@@ -131,11 +136,9 @@ class HelloProcess {
         sleep(2);
         //test case
         if($this->fp) {//父进程读取文件测试
-            $content = '';
-            while(!feof($this->fp) && ($buffer=fgets($this->fp, 100)) !== false) {
-                $content .= $buffer;
-            }
-            $this->info($this->currentPid, "父进程读文件内容：" . $content);
+            $content = fread($this->fp, 1);
+
+            $this->info($this->currentPid, "父进程读文件当前位置的内容：" . $content);
             fclose($this->fp);
         }
 
