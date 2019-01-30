@@ -130,6 +130,21 @@ class HelloProcess {
             $this->info($pid, '第' . $i . '个子进程启动，他的pid=' . $process->pid);
         }
         $this->info($pid, '生成子进程完毕！pid=' . json_encode(array_keys($this->pids)));
+
+        //测试文件句柄
+        sleep(2);
+        //test case
+        if($this->fp) {//父进程读取文件测试
+//            fclose($this->fp);
+//            $this->fp = fopen(self::FILENAME, 'a+');
+            $content = fread($this->fp, filesize(self::FILENAME));
+//            $this->info($this->currentPid, "父进程fstat：" . var_export(fstat($this->fp), true));
+            $this->info($this->currentPid, "父进程ftell：" . ftell($this->fp));
+            $this->info($this->currentPid, "父进程读文件内容：" . $content);
+            fclose($this->fp);
+        }
+
+
         //case b: 回收子进程
         $this->info($pid, '我开始等待回收子进程');
         while(!empty($this->pids)) {
@@ -141,16 +156,6 @@ class HelloProcess {
             }
         }
 
-        //test case
-        if($this->fp) {//父进程读取文件测试
-//            fclose($this->fp);
-//            $this->fp = fopen(self::FILENAME, 'a+');
-            $content = fread($this->fp, filesize(self::FILENAME));
-//            $this->info($this->currentPid, "父进程fstat：" . var_export(fstat($this->fp), true));
-            $this->info($this->currentPid, "父进程ftell：" . ftell($this->fp));
-            $this->info($this->currentPid, "父进程读文件内容：" . $content);
-            fclose($this->fp);
-        }
         $this->info($pid, '所有子进程回收完毕!');
 
     }
