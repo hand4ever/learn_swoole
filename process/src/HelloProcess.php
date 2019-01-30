@@ -70,18 +70,14 @@ class HelloProcess {
                 break;
             case self::TASK_CASE_FP:
                 if(!$this->isSubProcess) {//父进程更改当前工作目录，看看子进程会不会更改
-                    $this->fp = fopen(self::FILENAME, 'a+');
-                    fread($this->fp, 1);
-                    $this->info($this->currentPid, "{$prefix} begin ftell：".ftell($this->fp));
+                    $this->fp = fopen(self::FILENAME, 'r+');
                 }
                 $this->info($this->currentPid, "{$prefix} 文件描述符：" . print_r($this->fp, true));
                 if ($this->isSubProcess) {//子进程写文件
                     $str = "[" . date('Y-m-d H:i:s') . "-pid=" . $this->currentPid . "-子进程写入]" . PHP_EOL;
                     fwrite($this->fp, $str, strlen($str));
                     $this->info($this->currentPid, "{$prefix} 写入完成！");
-//                    if (fclose($this->fp)) {
-//                        $this->fp = null;
-//                    }
+//                    i
                 }
                 break;
             default:
@@ -135,11 +131,10 @@ class HelloProcess {
         sleep(2);
         //test case
         if($this->fp) {//父进程读取文件测试
-//            fclose($this->fp);
-//            $this->fp = fopen(self::FILENAME, 'a+');
-            $content = fread($this->fp, filesize(self::FILENAME));
-//            $this->info($this->currentPid, "父进程fstat：" . var_export(fstat($this->fp), true));
-            $this->info($this->currentPid, "父进程ftell：" . ftell($this->fp));
+            $content = '';
+            while(!feof($this->fp) && ($buffer=fgets($this->fp, 100)) !== false) {
+                $content .= $buffer;
+            }
             $this->info($this->currentPid, "父进程读文件内容：" . $content);
             fclose($this->fp);
         }
