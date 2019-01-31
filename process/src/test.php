@@ -1,7 +1,6 @@
 <?php
-$filename = '/Users/panlong/learn/test/php_test/myswoole/process/src/test.log';
-$fp = fopen($filename, 'a+');
-$content = fread($fp, filesize($filename));
-var_dump($content);
 
-fclose($fp);
+mkdir('aaa', 0777);
+chmod('aaa', 0777);
+
+touch('bbb');
